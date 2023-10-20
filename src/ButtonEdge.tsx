@@ -1,5 +1,6 @@
+import React, { useState } from 'react';
 import { BaseEdge, EdgeLabelRenderer, EdgeProps, getBezierPath } from 'reactflow';
-
+//Shadcn
 import {
     Dialog,
     DialogClose,
@@ -11,13 +12,15 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+//React-Icons
+import { FaPaperPlane } from 'react-icons/fa';
 
-const onEdgeClick = (evt, id) => {
+const onEdgeClick = (evt: any) => { //Stop the click event from triggering further event listeners
     evt.stopPropagation();
 };
 
+//Custom Button Edge component
 export default function CustomEdge({
-    id,
     sourceX,
     sourceY,
     targetX,
@@ -26,7 +29,9 @@ export default function CustomEdge({
     targetPosition,
     style = {},
     markerEnd,
+    data,
 }: EdgeProps) {
+    //Calculate path and label coordinates
     const [edgePath, labelX, labelY] = getBezierPath({
         sourceX,
         sourceY,
@@ -35,6 +40,28 @@ export default function CustomEdge({
         targetY,
         targetPosition,
     });
+
+    //Extracting labels from nodes
+    const { sourceLabel, targetLabel } = data;
+
+    //useState hook to manage form values
+    const [formValues, setFormValues] = useState({ 
+        nombre: '', 
+        apellido: '', 
+        fuente: sourceLabel, 
+        objetivo: targetLabel,
+    });
+
+    //Function to manage input change
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setFormValues({ ...formValues, [event.target.name]: event.target.value });
+    };
+
+    //Function to manage submit event
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault(); //prevents page to refresh
+        console.log(formValues);
+    };
 
     return (
         <>
@@ -53,8 +80,8 @@ export default function CustomEdge({
             >
             <Dialog>
                 <DialogTrigger asChild> 
-                    <Button className="edgebutton" onClick={(event) => onEdgeClick(event, id)}>
-                        Tramite
+                    <Button className="edgebutton" onClick={(event) => onEdgeClick(event)}>
+                        <FaPaperPlane></FaPaperPlane>
                     </Button >
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
@@ -65,18 +92,18 @@ export default function CustomEdge({
                         </DialogDescription>
                     </DialogHeader>
                     <div>
-                        <form className='flex flex-col justify-center items-center text-black'>
-                            <input className='shadow w-full py-2 px-3 mb-4' type="text" placeholder="Nombre"/>
-                            <input className='shadow w-full py-2 px-3 mb-4' type="text" placeholder="Apellido" />
+                        <form onSubmit={handleSubmit} className='flex flex-col justify-center items-center text-black'>
+                            <input name="nombre" className='shadow w-full py-2 px-3 mb-4' onBlur={handleInputChange} type="text" placeholder="Nombre"/>
+                            <input name="apellido" className='shadow w-full py-2 px-3 mb-4' onBlur={handleInputChange} type="text" placeholder="Apellido" />
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="submit" variant="secondary">
+                                        Enviar
+                                    </Button>
+                                </DialogClose>
+                            </DialogFooter>
                         </form>
                     </div>
-                    <DialogFooter className="sm:justify-start">
-                        <DialogClose asChild>
-                            <Button type="button" variant="secondary">
-                                Enviar
-                            </Button>
-                        </DialogClose>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
             </div>
