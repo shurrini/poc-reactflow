@@ -1,54 +1,70 @@
-import { useState, useCallback } from 'react';
-import ReactFlow, { Controls, Background, applyNodeChanges, applyEdgeChanges} from 'reactflow';
+import { useCallback } from 'react';
+import ReactFlow, {
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Controls,
+  Background,
+  Node,
+  Edge,
+  ConnectionMode,
+} from 'reactflow';
 import 'reactflow/dist/style.css';
 
-const initialEdges = [{ id: '1-2', source: '1', target: '2', label: 'to the' }];
+import ButtonEdge from './ButtonEdge';
 
-const initialNodes = [
+const initialNodes: Node[] = [
   {
-    id: '1',
-    position: { x: 0, y: 0 },
-    data: { label: 'Hello' },
+    id: 'button-1',
     type: 'input',
+    data: { label: 'Lugar' },
+    position: { x: 125, y: 0 },
   },
+  { id: 'button-2', data: { label: 'Lugar' }, position: { x: 125, y: 200 } },
+];
+
+const initialEdges: Edge[] = [
   {
-    id: '2',
-    position: { x: 100, y: 100 },
-    data: { label: 'World' },
+    id: 'edge-button',
+    source: 'button-1',
+    target: 'button-2',
+    type: 'buttonedge',
   },
 ];
 
-function App() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+//Height and width of the window
+const height = window.innerHeight;
+const width = window.innerWidth;
 
-  const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-  const onEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+const edgeTypes = {
+  buttonedge: ButtonEdge,
+};
 
-  //Height and width of the window
-  const height = window.innerHeight;
-  const width = window.innerWidth;
-  
+const EdgesFlow = () => {
+  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), []);
+
   return (
-    //Changed width and height, so the canvas fits the whole screen
     <div style={{ height: height, width: width }}>
       <ReactFlow
         nodes={nodes}
-        onNodesChange={onNodesChange}
         edges={edges}
+        onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        snapToGrid={true}
+        edgeTypes={edgeTypes}
+        fitView
+        attributionPosition="top-right"
+        connectionMode={ConnectionMode.Loose}
       >
-        <Background />
         <Controls />
+        <Background />
       </ReactFlow>
     </div>
   );
-}
+};
 
-export default App;
+export default EdgesFlow;
